@@ -8,6 +8,7 @@
 
 #include "Mutex.hpp"
 #include "MutexManager.hpp"
+#include "DeadlockException.hpp"
 
 void sleepMillis(std::size_t millis) {
     using namespace std::chrono;
@@ -67,5 +68,32 @@ TEST_SUITE("Deadlock Proof Mutex Overall") {
         tInc1.join();
 
         CHECK_EQ(30000, totalCount);
+    }
+
+    TEST_CASE("Simple Deadlock") {
+        /*
+         *  T1: m1.lock()
+         *  T2: m2.lock()
+         *  T1: m2.lock()
+         *  T2: m1.lock()
+         */
+
+        dpm::Mutex m1, m2;
+
+        auto worker1 = [&m1, &m2]() {
+            m1.lock();
+            sleepMillis(50);
+            m2.lock();
+        };
+
+        auto worker2 = [&m1, &m2]() {
+            sleepMillis(50);
+            m2.lock();
+            sleepMillis(50);
+            CHECK_THROWS_AS(m1.lock(), dpm::DeadlockException);
+        };
+
+        std::thread t1(worker1), t2(worker2);
+        t1.join(), t2.join();
     }
 }

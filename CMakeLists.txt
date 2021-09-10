@@ -9,6 +9,7 @@ set(
         DPM_SOURCES
         src/Mutex.cpp
         src/MutexManager.cpp
+        src/DeadlockException.cpp
 )
 add_library(${DPM_LIB} ${DPM_SOURCES})
 target_include_directories(${DPM_LIB} PUBLIC src)
