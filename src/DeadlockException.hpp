@@ -14,8 +14,14 @@
 
 namespace dpm {
 
+    /**
+     * @brief An exception, which is thrown once deadlock on @p dpm::Mutex is occurred.
+     */
     class DeadlockException : public std::runtime_error {
     public:
+        /**
+         * @param ids The Ids of threads, which are stuck in deadlock.
+         */
         explicit DeadlockException(const std::vector<std::thread::id>& ids);
     };
 

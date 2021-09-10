@@ -31,8 +31,15 @@ namespace dpm::detail {
         };
 
     public:
+        /**
+         * @return Reference to global MutexManager.
+         */
         static MutexManager& instance();
 
+        /**
+         * Initialized deadlock proof mutex.
+         * @return
+         */
         MutexId createMutex();
 
         void destroyMutex(MutexId id);

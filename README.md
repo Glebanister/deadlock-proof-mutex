@@ -37,3 +37,14 @@ If you want to run the tests locally, run the following code
 ```bash
 ./test_deadlock_proof_mutex
 ```
+
+## Documentation
+
+Source code contains doxygen-friendly comments,
+so beautiful documentation can be generated
+by typing
+
+```bash
+doxygen -g Doxygen
+doxygen Doxygen
+```
