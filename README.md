@@ -10,7 +10,9 @@ Thus, you may use it with `std::unique_lock`
 and `std::scoped_lock`.
 
 If a [deadlock](https://en.wikipedia.org/wiki/Deadlock) occurs during code execution, a `dpm::DeadlockException`
-is thrown.
+is thrown if flag `THROW_ON_DEADLOCK` is set to `true` and `std::abort`
+is called otherwise. Its value can be changed with static `Mutex` function call
+`dpm::Mutex::setThrowOnDeadlock(<new flag value>)`.
 
 ## Installation
 

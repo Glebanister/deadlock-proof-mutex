@@ -3,6 +3,10 @@
 
 #include "Mutex.hpp"
 
+void foo() {
+    std::cout << "Hello from thread " << std::this_thread::get_id() << std::endl;
+}
+
 int main() {
 
     std::thread a(foo);

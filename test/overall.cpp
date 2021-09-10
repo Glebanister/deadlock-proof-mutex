@@ -1,5 +1,5 @@
 //
-// Created by Глеб Марьин on 10.09.2021.
+// Created by Gleb Marin on 10.09.2021.
 //
 
 #include <doctest.h>
@@ -7,7 +7,6 @@
 #include <thread>
 
 #include "Mutex.hpp"
-#include "MutexManager.hpp"
 #include "DeadlockException.hpp"
 
 
@@ -85,6 +84,7 @@ TEST_SUITE("Deadlock Proof Mutex Overall") {
             m1.unlock();
         };
 
+        dpm::Mutex::setThrowOnDeadlock(true);
         worker1();
     }
 
@@ -116,6 +116,7 @@ TEST_SUITE("Deadlock Proof Mutex Overall") {
             m2.unlock();
         };
 
+        dpm::Mutex::setThrowOnDeadlock(true);
         std::thread t1(worker1), t2(worker2);
         t1.join(), t2.join();
     }

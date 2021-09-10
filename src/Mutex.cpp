@@ -32,4 +32,8 @@ namespace dpm {
         detail::MutexManager::instance().destroyMutex(mutexId_);
     }
 
+    void Mutex::setThrowOnDeadlock(bool f) noexcept {
+        detail::MutexManager::instance().setThrowOnDeadlock(f);
+    }
+
 } // namespace dpm

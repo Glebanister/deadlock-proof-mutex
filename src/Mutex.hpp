@@ -14,7 +14,12 @@ namespace dpm {
     /**
      * @brief A deadlock proof mutex. It could be used as a regular mutex (@p std::mutex).
      * But the executor is not permanently blocked if a deadlock occurs on dpm::Mutex.
-     * Instead, @p dpm::DeadlockException is thrown.
+     * Instead, @p dpm::DeadlockException is thrown if @p THROW_ON_DEADLOCK
+     * is defined, @p std::abort is called otherwise.
+     *
+     * @p Mutex is just a wrapper of @p MutexManager calls.
+     *
+     * @p Mutex is movable, but not copyable.
      */
     class Mutex {
     public:
@@ -34,7 +39,8 @@ namespace dpm {
         /**
          * Locks the mutex.
          * If a cyclic lock (deadlock) occurs in the process,
-         * an @p dpm::DeadlockException is thrown.
+         * an @p dpm::DeadlockException is thrown if @p THROW_ON_DEADLOCK
+         * is defined, `std::abort` is called otherwise.
          */
         void lock() const;
 
@@ -42,6 +48,12 @@ namespace dpm {
          * Unlocks the mutex.
          */
         void unlock() const;
+
+        /**
+         * @brief Set @p THROW_ON_DEADLOCK flag.
+         * @param f New flag value
+         */
+        static void setThrowOnDeadlock(bool f) noexcept;
 
         ~Mutex();
 

@@ -22,11 +22,6 @@ namespace dpm::detail {
         return mutexData_.find(id) != mutexData_.end();
     }
 
-    bool MutexManager::hasMutex(MutexId id) const {
-        std::scoped_lock guard(managerMutex_);
-        return hasMutexUnsafe(id);
-    }
-
     void MutexManager::destroyMutex(MutexManager::MutexId id) {
         std::scoped_lock lock(managerMutex_);
         if (!hasMutexUnsafe(id)) {
@@ -56,7 +51,11 @@ namespace dpm::detail {
             while (mutexData_[curMutexId].owner.has_value()) {
                 ThreadId curMutexOwnerId = mutexData_[curMutexId].owner.value();
                 if (curMutexOwnerId == thisThreadId) {
-                    throw DeadlockException(deadlockingThreads);
+                    if (throwOnDeadlock_) {
+                        throw DeadlockException(deadlockingThreads);
+                    }
+                    std::cerr << DeadlockException(deadlockingThreads).what() << std::endl;
+                    std::abort();
                 }
                 deadlockingThreads.push_back(curMutexOwnerId);
                 if (!threadData_[curMutexOwnerId].claimingMutex.has_value()) {
@@ -94,6 +93,10 @@ namespace dpm::detail {
 
     std::size_t MutexManager::getMutexDataSize() const {
         return mutexData_.size();
+    }
+
+    void MutexManager::setThrowOnDeadlock(bool f) noexcept {
+        throwOnDeadlock_ = f;
     }
 
     bool MutexManager::MutexData::isUnlocked() {
