@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "MutexManager.hpp"
+#include "DeadlockException.hpp"
 
 
 namespace dpm::detail {
@@ -39,16 +40,35 @@ namespace dpm::detail {
         if (!hasMutexUnsafe(mutexId)) {
             throw std::invalid_argument("Can not lock not created mutex");
         }
+        std::thread::id thisThreadId = std::this_thread::get_id();
         MutexData& thisMutexData = mutexData_[mutexId];
         if (thisMutexData.isUnlocked()) {
-            thisMutexData.owner = std::this_thread::get_id();
+            thisMutexData.owner = thisThreadId;
             return;
         }
-        ThreadData& thisThreadData = threadData_[std::this_thread::get_id()];
+        ThreadData& thisThreadData = threadData_[thisThreadId];
         thisThreadData.claimingMutex = mutexId;
+
+        {
+            // Check for deadlock
+            MutexId curMutexId = mutexId;
+            std::vector<ThreadId> deadlockingThreads = {thisThreadId};
+            while (mutexData_[curMutexId].owner.has_value()) {
+                ThreadId curMutexOwnerId = mutexData_[curMutexId].owner.value();
+                if (curMutexOwnerId == thisThreadId) {
+                    throw DeadlockException(deadlockingThreads);
+                }
+                deadlockingThreads.push_back(curMutexOwnerId);
+                if (!threadData_[curMutexOwnerId].claimingMutex.has_value()) {
+                    break;
+                }
+                curMutexId = threadData_[curMutexOwnerId].claimingMutex.value();
+            }
+        }
+
         thisMutexData.condUnlocked.wait(lock, [&thisMutexData]() { return thisMutexData.isUnlocked(); });
         thisThreadData.claimingMutex = std::nullopt;
-        thisMutexData.owner = std::this_thread::get_id();
+        thisMutexData.owner = thisThreadId;
     }
 
     void MutexManager::unlockMutex(MutexManager::MutexId mutexId) {

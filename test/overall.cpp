@@ -10,6 +10,7 @@
 #include "MutexManager.hpp"
 #include "DeadlockException.hpp"
 
+
 void sleepMillis(std::size_t millis) {
     using namespace std::chrono;
     std::this_thread::sleep_for(duration_cast<nanoseconds>(milliseconds(millis)));
@@ -70,27 +71,49 @@ TEST_SUITE("Deadlock Proof Mutex Overall") {
         CHECK_EQ(30000, totalCount);
     }
 
-    TEST_CASE("Simple Deadlock") {
+    TEST_CASE("One thread deadlock") {
         /*
          *  T1: m1.lock()
-         *  T2: m2.lock()
-         *  T1: m2.lock()
-         *  T2: m1.lock()
+         *  T2: m1.lock() // Deadlock
          */
 
         dpm::Mutex m1, m2;
 
         auto worker1 = [&m1, &m2]() {
             m1.lock();
-            sleepMillis(50);
+            CHECK_THROWS_AS(m1.lock(), dpm::DeadlockException);
+            m1.unlock();
+        };
+
+        worker1();
+    }
+
+    TEST_CASE("Two threads deadlock") {
+        /*
+         *  T1: m1.lock()
+         *  T2: m2.lock()
+         *  T1: m2.lock()
+         *  T2: m1.lock() // Deadlock
+         */
+
+        dpm::Mutex m1, m2;
+
+        auto worker1 = [&m1, &m2]() {
+            m1.lock();
+            sleepMillis(100);
             m2.lock();
+            sleepMillis(100);
+            m2.unlock();
+            sleepMillis(100);
+            m1.unlock();
         };
 
         auto worker2 = [&m1, &m2]() {
             sleepMillis(50);
             m2.lock();
-            sleepMillis(50);
+            sleepMillis(100);
             CHECK_THROWS_AS(m1.lock(), dpm::DeadlockException);
+            m2.unlock();
         };
 
         std::thread t1(worker1), t2(worker2);
