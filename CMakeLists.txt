@@ -22,4 +22,5 @@ set(
 )
 add_executable(${DPM_TEST} ${DPM_TEST_SOURCES})
 target_include_directories(${DPM_TEST} PUBLIC src)
+target_include_directories(${DPM_TEST} PUBLIC extern/doctest/doctest)
 target_link_libraries(${DPM_TEST} ${DPM_LIB})

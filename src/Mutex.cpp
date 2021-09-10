@@ -21,7 +21,7 @@ namespace dpm {
     }
 
     void Mutex::unlock() const {
-        detail::MutexManager::instance().lockMutex(mutexId_);
+        detail::MutexManager::instance().unlockMutex(mutexId_);
     }
 
     void Mutex::lock() const {

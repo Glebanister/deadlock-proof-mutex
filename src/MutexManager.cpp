@@ -2,13 +2,16 @@
 // Created by Gleb Marin on 08.09.2021.
 //
 
+#include <mutex>
+#include <iostream>
+
 #include "MutexManager.hpp"
 
 
 namespace dpm::detail {
 
     MutexManager::MutexId MutexManager::createMutex() {
-        std::unique_lock lock(managerMutex_);
+        std::scoped_lock lock(managerMutex_);
         using HtType = decltype(mutexData_);
         mutexData_[maxMutexId_].owner = std::nullopt;
         return maxMutexId_++;
@@ -19,12 +22,12 @@ namespace dpm::detail {
     }
 
     bool MutexManager::hasMutex(MutexId id) const {
-        std::unique_lock guard(managerMutex_);
+        std::scoped_lock guard(managerMutex_);
         return hasMutexUnsafe(id);
     }
 
     void MutexManager::destroyMutex(MutexManager::MutexId id) {
-        std::unique_lock lock(managerMutex_);
+        std::scoped_lock lock(managerMutex_);
         if (!hasMutexUnsafe(id)) {
             throw std::invalid_argument("Can not destroy mutex data: it was not created");
         }
@@ -43,15 +46,13 @@ namespace dpm::detail {
         }
         ThreadData& thisThreadData = threadData_[std::this_thread::get_id()];
         thisThreadData.claimingMutex = mutexId;
-        while (thisMutexData.isUnlocked()) {
-            thisMutexData.condUnlocked.wait(lock);
-        }
+        thisMutexData.condUnlocked.wait(lock, [&thisMutexData]() { return thisMutexData.isUnlocked(); });
         thisThreadData.claimingMutex = std::nullopt;
         thisMutexData.owner = std::this_thread::get_id();
     }
 
     void MutexManager::unlockMutex(MutexManager::MutexId mutexId) {
-        std::unique_lock lock(managerMutex_);
+        std::scoped_lock lock(managerMutex_);
         if (!hasMutexUnsafe(mutexId)) {
             throw std::invalid_argument("Can not unlock not created mutex");
         }
@@ -69,6 +70,10 @@ namespace dpm::detail {
     MutexManager& MutexManager::instance() {
         static MutexManager globalMutexManager;
         return globalMutexManager;
+    }
+
+    std::size_t MutexManager::getMutexDataSize() const {
+        return mutexData_.size();
     }
 
     bool MutexManager::MutexData::isUnlocked() {

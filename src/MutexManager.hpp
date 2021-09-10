@@ -43,6 +43,8 @@ namespace dpm::detail {
 
         bool hasMutex(MutexId id) const;
 
+        std::size_t getMutexDataSize() const;
+
     private:
         [[nodiscard]] bool hasMutexUnsafe(MutexId id) const;
 
