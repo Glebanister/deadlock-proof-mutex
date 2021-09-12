@@ -10,6 +10,8 @@
 #include <thread>
 #include <vector>
 #include <sstream>
+#include <iterator>
+#include <algorithm>
 
 
 namespace dpm {
