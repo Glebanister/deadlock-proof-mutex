@@ -10,6 +10,7 @@
 #include <thread>
 #include <set>
 #include <mutex>
+#include <condition_variable>
 
 
 namespace dpm::detail {
