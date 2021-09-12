@@ -13,6 +13,9 @@ set(
 )
 add_library(${DPM_LIB} ${DPM_SOURCES})
 target_include_directories(${DPM_LIB} PUBLIC src)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(${DPM_LIB} PRIVATE Threads::Threads)
 
 # Testing
 set(DPM_TEST test_${DPM_LIB})
