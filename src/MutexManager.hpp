@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <thread>
 #include <set>
+#include <mutex>
 
 
 namespace dpm::detail {
