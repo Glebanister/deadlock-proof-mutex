@@ -1,3 +1,5 @@
+[![CMake](https://github.com/Glebanister/deadlock-proof-mutex/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/Glebanister/deadlock-proof-mutex/actions/workflows/cmake.yml)
+
 # Deadlock proof mutex
 
 Test assignment for JetBrains research.
